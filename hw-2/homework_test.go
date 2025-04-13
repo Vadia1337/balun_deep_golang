@@ -12,7 +12,8 @@ import (
 type CircularQueue struct {
 	values []int
 	nextPushIdx,
-	nextPopIdx int
+	nextPopIdx,
+	size int
 }
 
 func NewCircularQueue(size int) *CircularQueue {
@@ -20,72 +21,54 @@ func NewCircularQueue(size int) *CircularQueue {
 		return nil
 	}
 
-	values := make([]int, size)
-	for i := range values {
-		values[i] = -1
-	}
-
 	return &CircularQueue{
-		values: values,
+		values: make([]int, size),
 	}
 }
 
 func (q *CircularQueue) Push(value int) bool {
-	if q.values[q.nextPushIdx] != -1 {
+	if q.Full() {
 		return false
 	}
 	q.values[q.nextPushIdx] = value
-
-	if q.nextPushIdx+1 == len(q.values) {
-		q.nextPushIdx = 0
-	} else {
-		q.nextPushIdx++
-	}
+	q.nextPushIdx = (q.nextPushIdx + 1) % len(q.values)
+	q.size++
 
 	return true
 }
 
 func (q *CircularQueue) Pop() bool {
-	if q.values[q.nextPopIdx] == -1 {
+	if q.Empty() {
 		return false
 	}
-	q.values[q.nextPopIdx] = -1
-
-	if q.nextPopIdx+1 == len(q.values) {
-		q.nextPopIdx = 0
-	} else {
-		q.nextPopIdx++
-	}
+	q.nextPopIdx = (q.nextPopIdx + 1) % len(q.values)
+	q.size--
 
 	return true
 }
 
 func (q *CircularQueue) Front() int {
+	if q.Empty() {
+		return -1
+	}
+
 	return q.values[q.nextPopIdx]
 }
 
 func (q *CircularQueue) Back() int {
-	if q.nextPushIdx-1 < 0 {
-		return q.values[len(q.values)-1]
-	} else {
-		return q.values[q.nextPushIdx-1]
+	if q.Empty() {
+		return -1
 	}
+
+	return q.values[(q.nextPushIdx-1+q.size)%len(q.values)]
 }
 
 func (q *CircularQueue) Empty() bool {
-	if q.nextPushIdx == q.nextPopIdx && q.values[q.nextPushIdx] == -1 {
-		return true
-	}
-
-	return false
+	return q.size == 0
 }
 
 func (q *CircularQueue) Full() bool {
-	if q.nextPushIdx == q.nextPopIdx && q.values[q.nextPushIdx] != -1 {
-		return true
-	}
-
-	return false
+	return q.size == len(q.values)
 }
 
 func TestCircularQueue(t *testing.T) {
