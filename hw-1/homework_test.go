@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/binary"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -9,14 +8,11 @@ import (
 
 // go test -v homework_test.go
 
-func main() {
-}
-
 func ToLittleEndian(number uint32) uint32 {
-	// todo: пробрасывать переменную bytes извне чтобы каждый раз не аллоцировать память.
-	bytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(bytes, number)
-	return binary.LittleEndian.Uint32(bytes)
+	return ((number >> 24) & 0xff) |
+		((number << 8) & 0xff0000) |
+		((number >> 8) & 0xff00) |
+		((number << 24) & 0xff000000)
 }
 
 func TestConversion(t *testing.T) {
