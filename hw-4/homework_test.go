@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -57,11 +58,6 @@ func (m *OrderedMap) Erase(key int) {
 
 	leaf := m.root.findByKey(key)
 
-	if leaf.parent == nil {
-		leaf.left.parent = leaf.right
-		return
-	}
-
 	p := leaf.left
 
 	if leaf.right != nil {
@@ -70,6 +66,12 @@ func (m *OrderedMap) Erase(key int) {
 
 	if leaf.left != nil && leaf.right != nil {
 		leaf.left.parent = leaf.right
+		leaf.right.left = leaf.left
+	}
+
+	if leaf.parent == nil {
+		m.root = p
+		return
 	}
 
 	if leaf.parent.key > key {
@@ -190,5 +192,19 @@ func TestOrderedMap(t *testing.T) {
 		keys = append(keys, key)
 	})
 
+	fmt.Println(keys)
+	assert.True(t, reflect.DeepEqual(expectedKeys, keys))
+
+	data.Erase(10)
+	assert.False(t, data.Contains(10))
+	assert.Equal(t, 3, data.Size())
+
+	keys = nil
+	expectedKeys = []int{4, 5, 12}
+	data.ForEach(func(key, _ int) {
+		keys = append(keys, key)
+	})
+
+	fmt.Println(keys)
 	assert.True(t, reflect.DeepEqual(expectedKeys, keys))
 }
