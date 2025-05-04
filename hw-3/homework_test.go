@@ -10,6 +10,8 @@ import (
 
 // go test -v homework_test.go
 
+var initRefs int
+
 type COWBuffer struct {
 	data []byte
 	refs *int
@@ -18,7 +20,7 @@ type COWBuffer struct {
 func NewCOWBuffer(data []byte) COWBuffer {
 	return COWBuffer{
 		data: data,
-		refs: new(int),
+		refs: &initRefs,
 	}
 }
 
@@ -35,7 +37,6 @@ func (b *COWBuffer) Close() {
 		return
 	}
 
-	b.data = nil
 	b.refs = nil
 }
 
@@ -47,8 +48,9 @@ func (b *COWBuffer) Update(index int, value byte) bool {
 	if *b.refs > 1 {
 		newBuff := make([]byte, len(b.data))
 		copy(newBuff, b.data)
-
 		*b = NewCOWBuffer(newBuff)
+
+		*b.refs--
 	}
 
 	b.data[index] = value
